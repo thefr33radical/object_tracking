@@ -28,9 +28,10 @@ end = 0.0
 frame_counter = 0
 kinect.has_new_color_frame()
 time.sleep(2.0)
+#(10, 100, 20), (25, 255, 255)
+greenLower = (57,88 , 90)
+greenUpper = (68, 242, 231)
 
-greenLower = (29, 86, 6)
-greenUpper = (64, 255, 255)
 pts = deque(maxlen=64)
 print("iniitalizing default")
 start = time.time()
@@ -43,24 +44,17 @@ while True:
         color_img = color_frame.reshape(((color_height, color_width, 4))).astype(np.uint8)
         color_img_resize = cv2.resize(color_img, (0, 0), fx=0.25, fy=0.25)
         #cv2.imshow('color', color_img_resize)
-
         frame = color_img_resize
         if frame is None:
             break
-
         # resize the frame, blur it, and convert it to the HSV
         # color space
         frame = imutils.resize(frame, width=800)
         blurred = cv2.GaussianBlur(frame, (11, 11), 0)
         hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
-        cv2.imshow('color', hsv)
-        # construct a mask for the color "green", then perform
-        # a series of dilations and erosions to remove any small
-        # blobs left in the mask
-        mask = cv2.inRange(hsv, greenLower, greenUpper)
-        mask = cv2.erode(mask, None, iterations=2)
-        mask = cv2.dilate(mask, None, iterations=2)
-
+        mask = cv2.inRange(hsv,(40, 86, 90), (64, 200, 240) )
+        cv2.imshow("orange", mask)
+        
         frame_counter += 1
     else:
         print("Iniitalizing afer a break")
