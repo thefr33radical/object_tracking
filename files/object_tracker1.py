@@ -15,6 +15,11 @@ import imutils
 import logging
 import math
 
+path = "c:/Users/ReGameVR/Envs/regamevr_virtualenv/object_tracking/"
+logging.basicConfig(level=logging.ERROR,filename=path+'tracker.log', format= '%(name)s - %(levelname)s - %(message)s',filemode="w")
+
+
+
 ap = argparse.ArgumentParser()
 args = vars(ap.parse_args())
 
@@ -47,13 +52,16 @@ print("iniitalizing default")
 start = time.time()
 print("start time : ", start)
 
+fourcc = cv2.VideoWriter_fourcc(*"X264")
+out = cv2.VideoWriter('output.mp4',fourcc, 30, ( color_width, color_height))
+
 
 def exit_routine(frame_counter, start):
     end = time.time()
     fps = float(frame_counter/(end-start))
     print("FPS:",fps)
 
-
+fourcc
 while True:
     if kinect.has_new_color_frame():
 
@@ -115,7 +123,8 @@ while True:
                         d = dist_q.pop()
                         t = time_q.pop()
                         pr = time.time()
-                        speed =  math.sqrt( (center[0]-d[0])**2 + (center[1]-d[1])**2 ) / abs(t - pr)
+                        #speed =  math.sqrt( (center[0]-d[0])**2 + (center[1]-d[1])**2 ) / abs(t - pr)
+                        speed =  abs(center[1]-d[1]) / abs(t - pr)
                         time_q.appendleft(pr)
                         dist_q.appendleft(center)
 
@@ -131,11 +140,11 @@ while True:
                             cv2.line(frame, pts[i - 1], pts[i],
                                      (0, 120, 255), thickness)
                         except Exception as e:
-                            logging.error(
-                                "Computing error in line thickness ->", e)
+                            logging.exception(
+                                "Computing error in line thickness ")
 
                 except Exception as e:
-                    logging.error("Moments values are 0 error ->", e)
+                    logging.exception("Moments values are 0 error ")
         
             # Update Frame Number
             frame_counter += 1
@@ -151,7 +160,11 @@ while True:
         cv2.putText(frame, 'Speed:'+str(speed),     position_text2,
                         font,     fontScale,    fontColor,    lineType)
         # show the frame to our screen
+        
+        #frame = imutils.resize(frame, width=320,height =240)
         cv2.imshow("Frame", frame)
+
+        out.write(frame)
 
         # Press Escape key to Quit
         key = cv2.waitKey(1) & 0xFF
