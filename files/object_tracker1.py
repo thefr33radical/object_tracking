@@ -44,7 +44,7 @@ position_text2 = (5, 60)
 fontScale = 1
 fontColor = (255, 255, 255)
 lineType = 2
-# Queue to store trace points
+# Queue to store trace points 
 pts = deque(maxlen=32)
 time_q =deque(maxlen=2)
 dist_q = deque(maxlen=2)
