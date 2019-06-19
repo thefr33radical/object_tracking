@@ -18,8 +18,6 @@ import math
 path = "c:/Users/ReGameVR/Envs/regamevr_virtualenv/object_tracking/"
 logging.basicConfig(level=logging.ERROR,filename=path+'tracker.log', format= '%(name)s - %(levelname)s - %(message)s',filemode="w")
 
-
-
 ap = argparse.ArgumentParser()
 args = vars(ap.parse_args())
 
