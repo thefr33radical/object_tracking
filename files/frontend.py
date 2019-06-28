@@ -25,7 +25,7 @@ def home_return():
             age=request.form. get("age")
             exp=request.form. get("exp")
             print(name,age,exp)
-            obj.compute()
+            obj.compute(name,age,exp)
             return render_template("stop.html")
         elif  request.form['action'] == 'Stop':
             obj.set_val=0

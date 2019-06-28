@@ -30,7 +30,7 @@ class ObjectTracker(object):
         info["exp"]=exp
         info["fps"]=fps
         info["ball_speed"]=speed_data
-        info["bat_speed"]=speed_data2
+        #info["bat_speed"]=speed_data2
 
         print("length",len(speed_data),len(speed_data2))
         #info["error"]=[]
@@ -39,7 +39,7 @@ class ObjectTracker(object):
         #info["bat_time"]=time_data2
         output=pd.DataFrame(info)
         print("FPS:",fps)
-        output.to_csv("output"+str(exp)+".csv")
+        output.to_csv("output_"+str(exp)+".csv")
 
     def compute(self,name,age,exp):
             
@@ -70,6 +70,7 @@ class ObjectTracker(object):
         position_text = (5, 30)
         position_text2 = (5, 60)
         bat_text2 = (5, 90)
+        error_text = (5, 120)
         fontScale = 1
         fontColor = (255, 255, 255)
         lineType = 2
@@ -80,6 +81,7 @@ class ObjectTracker(object):
         dist_q = deque(maxlen=2)
         speed_data=deque()
         time_data=deque()
+        error=deque()
 
         time_q2 =deque(maxlen=2)
         dist_q2 = deque(maxlen=2)
@@ -91,7 +93,7 @@ class ObjectTracker(object):
         print("start time : ", start)
 
         fourcc = cv2.VideoWriter_fourcc(*"avc1")
-        out = cv2.VideoWriter('output.mp4',fourcc, 30, ( 960, 540))
+        out = cv2.VideoWriter('output_'+str(exp)+'.mp4',fourcc, 30, ( 960, 540))
             
         while True:
             if kinect.has_new_color_frame():
@@ -177,6 +179,13 @@ class ObjectTracker(object):
                             pts.appendleft(center)
                             bat_pts.appendleft(center2)
 
+                            if center[1] >150 and center[1] < 400:
+                                error.appendleft(0)
+                            if center[1] < 150:
+                                error.appendleft(150-center[1])
+                            else:
+                                error.appendleft(400-center[1])
+
                             if len(time_q)>1 and len(dist_q) >1 and len(time_q2)>1 and len(dist_q) >1:
                                 d = dist_q.pop()
                                 t = time_q.pop()
@@ -241,11 +250,17 @@ class ObjectTracker(object):
                 cv2.putText(frame, 'FPS:'+str(fps_present),     position_text,
                                 font,     fontScale,    fontColor,    lineType)
                 
-                cv2.putText(frame, 'Speed:'+str(speed),     position_text2,
+                cv2.putText(frame, 'Ball Speed:'+str(speed),     position_text2,
                                 font,     fontScale,    fontColor,    lineType)
               
-                cv2.putText(frame, 'Speed:'+str(speed2),     bat_text2,
+                cv2.putText(frame, 'Bat Speed:'+str(speed2),     bat_text2,
                                 font,     fontScale,    fontColor,    lineType)
+                cv2.putText(frame, 'Error:'+str(error),     error_text,
+                                font,     fontScale,    fontColor,    lineType)
+
+                lineThickness = 2
+                cv2.line(frame, (0, 150), (960, 150), (0,255,0), lineThickness)
+                cv2.line(frame, (0, 400), (960, 400), (0,255,0), lineThickness)
                 # show the frame to our screen
                 
                 #frame = imutils.resize(frame, width=320,height =240)
