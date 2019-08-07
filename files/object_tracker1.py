@@ -36,15 +36,12 @@ class ObjectTracker(object):
         info["fps"]=fps
         info["ball_speed"]=speed_data
         #info["bat_speed"]=speed_data2
-
         print("length",len(speed_data),len(speed_data2))
-        #info["error"]=[]
-        
         info["ball_time"]=time_data
         #info["bat_time"]=time_data2
         output=pd.DataFrame(info)
         print("FPS:",fps)
-        output.to_csv("output_"+str(exp)+".csv")
+        output.to_csv("H:\workdir\object_tracking\output_"+str(exp)+".csv")
 
     def draw_circle(self,event,x,y,flags,param):
         
@@ -58,7 +55,7 @@ class ObjectTracker(object):
     def compute(self,name,age,exp):
             
         path = "c:/Users/ReGameVR/Envs/regamevr_virtualenv/object_tracking/"
-        logging.basicConfig(level=logging.ERROR,filename=path+'tracker.log', format= '%(name)s - %(levelname)s - %(message)s',filemode="w")
+        #logging.basicConfig(level=logging.ERROR,filename=path+'tracker.log', format= '%(name)s - %(levelname)s - %(message)s',filemode="w")
 
         ap = argparse.ArgumentParser()
         args = vars(ap.parse_args())
@@ -293,10 +290,12 @@ class ObjectTracker(object):
               
                 cv2.putText(frame, 'Bat Speed :'+str(speed2),     bat_text2,
                                 font,     fontScale,    fontColor,    lineType)
+                try:
 
-                cv2.putText(frame, 'Error : '+str(error[0]),     error_text,
+                    cv2.putText(frame, 'Error : '+str(error[0]),     error_text,
                                 font,     fontScale,    fontColor,    lineType)
-
+                except :
+                    print("No Error")
                 # Draw Error Line
                 lineThickness = 2
                 cv2.line(frame, (0, self.mouseY), (960, self.mouseY), (0,255,0), lineThickness)
