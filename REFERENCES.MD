@@ -16,4 +16,5 @@
 * https://www.pyimagesearch.com/2018/07/30/opencv-object-tracking/
 * https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_tutorials.html
 * https://towardsdatascience.com/object-detection-and-tracking-in-pytorch-b3cf1a696a98
+* HSV : https://stackoverflow.com/questions/10948589/choosing-the-correct-upper-and-lower-hsv-boundaries-for-color-detection-withcv/48367205#48367205
 
