@@ -6,15 +6,18 @@
 * https://www.pyimagesearch.com/2018/11/12/yolo-object-detection-with-opencv/
 * https://www.pyimagesearch.com/2017/09/11/object-detection-with-deep-learning-and-opencv/
 * https://github.com/limgm/PyKinect2/blob/master/examples/basic_2D.py
-* https://www.learnopencv.com/object-tracking-using-opencv-cpp-python/
 * https://www.analyticsvidhya.com/blog/2019/04/introduction-image-segmentation-techniques-python/
 * https://www.pyimagesearch.com/2018/07/30/opencv-object-tracking/
 * https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_watershed/py_watershed.html
+* https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_tutorials.html
+* https://towardsdatascience.com/object-detection-and-tracking-in-pytorch-b3cf1a696a98
+#### HSV :
+* https://stackoverflow.com/questions/10948589/choosing-the-correct-upper-and-lower-hsv-boundaries-for-color-detection-withcv/48367205#48367205
+#### Trackers :
+* https://medium.com/teleidoscope/comparing-state-of-the-art-region-of-interest-trackers-906ba420e80d
+* https://www.learnopencv.com/object-tracking-using-opencv-cpp-python/
 * https://www.pyimagesearch.com/2015/09/21/opencv-track-object-movement/
 * https://www.pyimagesearch.com/2015/09/14/ball-tracking-with-opencv/
 * https://www.pyimagesearch.com/2018/07/23/simple-object-tracking-with-opencv/
 * https://www.pyimagesearch.com/2018/07/30/opencv-object-tracking/
-* https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_tutorials.html
-* https://towardsdatascience.com/object-detection-and-tracking-in-pytorch-b3cf1a696a98
-* HSV : https://stackoverflow.com/questions/10948589/choosing-the-correct-upper-and-lower-hsv-boundaries-for-color-detection-withcv/48367205#48367205
 
