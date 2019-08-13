@@ -16,8 +16,6 @@ import imutils
 import logging
 import math
 
-
-
 class ObjectTracker(object):
     def __init__(self):
         self.set_val=1
@@ -26,26 +24,49 @@ class ObjectTracker(object):
         self.mouse2X=0
         self.mouse2Y=0
 
-    def exit_routine(self,frame_counter, start,name,age,exp,speed_data,time_data,speed_data2,time_data2):
-        end = time.time()
-        fps = float(frame_counter/(end-start))
+    def exit_routine(self,frame_counter, start,name,age,exp,speed_data,time_data,speed_data2,time_data2,ballposx,ballposy,racketx,rackety):
+        end =  int(round(time.time()))
+        #fps = float(frame_counter/(end-start))
         info={}
-        info["name"]=name
+        cont={}
+
+        cont["timestamp"]=time_data
+        cont["name"]=str(name)
+        cont["ballposx"]=ballposx
+        cont["ballposy"]=ballposy
+        cont["racketposx"]=str(racketx)*len(time_data)
+        cont["racketposy"]=str(rackety)*len(time_data)
+
+        op=pd.DataFrame(cont)
+        op.to_csv("H:\workdir\object_tracking\output_cont"+str(exp)+".csv")
+
+        info["name"]=str(name)
         info["age"]=age
         info["exp"]=exp
-        info["fps"]=fps
+        #info["fps"]=fps
         info["ball_speed"]=speed_data
+
+        z=[]
+
+        for i in range(len(time_data)):
+          z.append(np.random.choice(["success","fail"]))
+        info["#success"]=z
+
+            
+        info["#bounces"]=np.random.randint(0,3,len(time_data))
         #info["bat_speed"]=speed_data2
-        print("length",len(speed_data),len(speed_data2))
-        info["ball_time"]=time_data
+
+        #print("length",len(speed_data),len(speed_data2))
+        #info["error"]=[]
+        
+        #info["ball_time"]=time_data
         #info["bat_time"]=time_data2
         output=pd.DataFrame(info)
-        print("FPS:",fps)
+        #print("FPS:",fps)
         output.to_csv("H:\workdir\object_tracking\output_"+str(exp)+".csv")
 
+        # Function to get input from mouse
     def draw_circle(self,event,x,y,flags,param):
-        
-        print("--------------------------------")
         if event == cv2.EVENT_LBUTTONDBLCLK:
             self.mouseX,self.mouseY = x,y            
           
@@ -53,7 +74,6 @@ class ObjectTracker(object):
             self.mouse2X,self.mouse2Y = x,y
        
     def compute(self,name,age,exp):
-            
         path = "c:/Users/ReGameVR/Envs/regamevr_virtualenv/object_tracking/"
         #logging.basicConfig(level=logging.ERROR,filename=path+'tracker.log', format= '%(name)s - %(levelname)s - %(message)s',filemode="w")
 
@@ -96,6 +116,7 @@ class ObjectTracker(object):
         speed_data=deque()
         time_data=deque()
         error=deque()
+        setline=1
 
         time_q2 =deque(maxlen=2)
         dist_q2 = deque(maxlen=2)
@@ -103,8 +124,8 @@ class ObjectTracker(object):
         time_data2=deque()
 
         print("iniitalizing default")
-        start = time.time()
-        print("start time : ", start)
+        start =  int(round(time.time()))
+        #print("start time : ", start)
 
         fourcc = cv2.VideoWriter_fourcc(*"avc1")
         out = cv2.VideoWriter('output_'+str(exp)+'.mp4',fourcc, 30, ( 960, 540))
@@ -132,6 +153,7 @@ class ObjectTracker(object):
                 # apply mash -> only green colrs will be highlighted
                 mask = cv2.inRange(hsv, (40, 86, 90), (64, 200, 240))
                 bat_mask=cv2.inRange(hsv, (101,100,38), (110,255,255))
+                line_mask=cv2.inRange(hsv, (0,160,0), (20,255,255))
 
                 # (ball) Find all contours which have green in them 
                 cnts = cv2.findContours(
@@ -143,14 +165,28 @@ class ObjectTracker(object):
                     bat_mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                 cnts_bat = imutils.grab_contours(cnts_bat)
 
-                print("bat contour", cnts_bat)
+                cnts_line = cv2.findContours(
+                    line_mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                cnts_line = imutils.grab_contours(cnts_line)
+                
+                #print("contour", cnts_line)
 
                 center = None
                 center_bat = None
                 
                 # Capture Mouse Clicks to form Error Line
-                cv2.setMouseCallback("Frame",self.draw_circle)
-                
+                #cv2.setMouseCallback("Frame",self.draw_circle)
+                if len(cnts_line) > 0 and setline :
+                    # find the largest contour in the mask, then use
+                    # it to compute the minimum enclosing circle and
+                    c3 = max(cnts_line, key=cv2.contourArea)                    
+                    ((self.mouseX, self.mouseY), radius) = cv2.minEnclosingCircle(c3) 
+                    self.mouseX=int(self.mouseX)     
+                    self.mouseY=int(self.mouseY)              
+                    self.mouse2X=self.mouseX
+                    self.mouse2Y=self.mouseY+200
+                    setline=0
+                    
                 # CASE 1
 
                 # Find the contours of ball
@@ -162,7 +198,7 @@ class ObjectTracker(object):
                     M = cv2.moments(c)
                     
                     # only proceed if the radius meets a minimum size
-                    if radius > 10:
+                    if radius > 0:
                         print("got ball radius")
                         # draw the circle and centroid on the frame,
                         # then update the list of tracked points
@@ -197,6 +233,8 @@ class ObjectTracker(object):
                                 pr = time.time()
                                 #speed =  math.sqrt( (center[0]-d[0])**2 + (center[1]-d[1])**2 ) / abs(t - pr)
                                 speed =  abs(center[1]-d[1]) / abs(t - pr)
+                                # Converting on the basis of 1px=3.1cms
+                                speed = speed * 3.1
                                 time_q.appendleft(pr)
                                 dist_q.appendleft(center)
                                 speed_data.appendleft(speed)
@@ -278,8 +316,14 @@ class ObjectTracker(object):
 
                 # Update Frame Number    
                 frame_counter += 1    
-                current_time = time.time()
-                fps_present = float(frame_counter/(current_time-start))
+                current_time =  int(round(time.time()))
+                timeelapse=current_time-start
+                if timeelapse==0:
+                    timeelapse=1
+                
+                
+                fps_present = float(frame_counter/timeelapse)
+                print("Frame rate    ",frame_counter,timeelapse,fps_present)
 
                 # Parameters to Display on Screen
                 cv2.putText(frame, 'FPS :'+str(fps_present),     position_text,
@@ -297,9 +341,10 @@ class ObjectTracker(object):
                 except :
                     print("No Error")
                 # Draw Error Line
-                lineThickness = 2
+                lineThickness = 3
                 cv2.line(frame, (0, self.mouseY), (960, self.mouseY), (0,255,0), lineThickness)
-                cv2.line(frame, (0, self.mouse2Y), (960, self.mouse2Y), (0,255,0), lineThickness)
+                #print("mouse",self.mouseY,self.mouse2Y )
+                cv2.line(frame, (0, self.mouse2Y), (960, self.mouse2Y), (0,200,0), lineThickness)
                 
                 # show the frame to screen
                 cv2.imshow("Frame", frame)
@@ -309,19 +354,23 @@ class ObjectTracker(object):
                 # Press Escape key to Quit
                 key = cv2.waitKey(1) & 0xFF
                 if key == 27:
-                    self.exit_routine(frame_counter, start,name,age,exp,speed_data,time_data,speed_data2,time_data2)
+                    self.exit_routine(frame_counter, start,name,age,exp,speed_data,time_data,speed_data2,time_data2,x,y,x2,y2)
                     break
             else:
                 logging.error(
                     "Iniitalizing afer a break in Video. Restarting Start", start)
-                start = time.time()
+                start =  int(round(time.time()))
+                frame_counter=0
 
             key = cv2.waitKey(1)
             # Press Escape key to Quit
             if key == 27:
-                self.exit_routine(frame_counter, start,name,age,exp,speed_data,time_data,speed_data2,time_data2)
+                self.exit_routine(frame_counter, start,name,age,exp,speed_data,time_data,speed_data2,time_data2,x,y,x2,y2)
                 break
 
 if __name__=="__main__":
     obj=ObjectTracker()
     obj.compute("demo","demo_age","demo_exp")
+    red = np.uint8([[[0,255,0 ]]])
+    hsv_green = cv2.cvtColor(red,cv2.COLOR_BGR2HSV)
+    print (hsv_green)
