@@ -321,7 +321,6 @@ class ObjectTracker(object):
                 if timeelapse==0:
                     timeelapse=1
                 
-                
                 fps_present = float(frame_counter/timeelapse)
                 print("Frame rate    ",frame_counter,timeelapse,fps_present)
 

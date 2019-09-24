@@ -15,6 +15,23 @@ import imutils
 import logging
 import math
 
+
+def ComputeError(x,y,linex,liney):
+    """
+    Function to compute the error from the line
+    """
+    error=0
+    if y> liney:
+        error=liney -x
+    else:
+        error=liney -y
+
+    return error
+
+def ComputeBounce(x,y,):
+
+    pass
+
 path = "c:/Users/ReGameVR/Envs/regamevr_virtualenv/object_tracking/"
 logging.basicConfig(level=logging.ERROR,filename=path+'tracker.log', format= '%(name)s - %(levelname)s - %(message)s',filemode="w")
 
@@ -59,7 +76,6 @@ def exit_routine(frame_counter, start):
     fps = float(frame_counter/(end-start))
     print("FPS:",fps)
 
-fourcc
 while True:
     if kinect.has_new_color_frame():
 
