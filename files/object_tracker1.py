@@ -258,8 +258,9 @@ class ObjectTracker(object):
                                         "Computing error in line thickness ")
                         except Exception as e:
                             logging.exception("Moments values are 0 error ")       
-                else:
+                else:python 
                     logging.warning("No ball detected") 
+                    ballnotfound=1
                     print('ball not detected')           
                     speed=0  
            
