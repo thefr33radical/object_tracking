@@ -2,12 +2,16 @@
 from flask import Flask, render_template,request
 import os
 import pandas as pd
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from object_tracker1 import ObjectTracker
 
+# Set root path
+# set static path
+template_path =os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+"\\template"
+print("ROOT PATH",template_path)
 
-root_path = "C:/Users/ReGameVR/Envs/regamevr_virtualenv/object_tracking/template"
-
-app = Flask(__name__,template_folder=root_path,root_path=root_path)
+app = Flask(__name__,template_folder=template_path)
+app.static_folder=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+"\\template\\static"
 obj=ObjectTracker()
 
 @app.route("/")
@@ -33,12 +37,12 @@ def home_return():
         #text = request.form['Experiment Number']
     except Exception as e:
         print(e)
-    return "123"
+    return render_template("stop.html")
 
 
-@app.route("/salvador")
-def salvador():
-    return "Hello, Salvador"
+@app.route("/test")
+def test():
+    return "Hello, test complete"
 
 if __name__ == "__main__":    
     app.run(debug=True)
