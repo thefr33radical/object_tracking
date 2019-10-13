@@ -16,7 +16,7 @@ import math
 import os
 
 path=os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))+"\\"
-print(path)
+
 class Record(object):
 
     def compute(self,ID,exp,session):
@@ -30,9 +30,7 @@ class Record(object):
         kinect = PyKinectRuntime.PyKinectRuntime(PyKinectV2.FrameSourceTypes_Body | PyKinectV2.FrameSourceTypes_BodyIndex | PyKinectV2.FrameSourceTypes_Color |
                                                 PyKinectV2.FrameSourceTypes_Depth | PyKinectV2.FrameSourceTypes_Infrared)
         # Default: 1920, 1080 video height and width for kinect
-        color_width, color_height = kinect.color_frame_desc.Width, kinect.color_frame_desc.Height
-        cv2.namedWindow('Frame')
-        
+        color_width, color_height = kinect.color_frame_desc.Width, kinect.color_frame_desc.Height       
         frame_counter = 0
 
         # Camera Warmup time
@@ -50,13 +48,14 @@ class Record(object):
         trial=1
         fourcc = cv2.VideoWriter_fourcc(*"X264")
         out = cv2.VideoWriter(path+'\\video_data\\'+str(ID)+"_"+str(exp)+"_"+str(session)+"_"+str(trial)+'.mp4',fourcc, 30,  ( color_width, color_height))
-        
+        frame_name=ID+session
         print(color_height,color_width)        
-            
+        cv2.namedWindow(frame_name)
+        
         while True:
             if kinect.has_new_color_frame():
                 time_stamp.appendleft(datetime.datetime.utcnow())
-
+                #print(kinect.has_new_color_frame)
                 # Get image from kinect
                 color_frame = kinect.get_last_color_frame()
                 
@@ -84,24 +83,24 @@ class Record(object):
                 cv2.putText(frame, 'FPS : '+str(int(fps_present)),     position_text,
                                 font,     fontScale,    fontColor,    2)
 
-                cv2.putText(frame, 'Status : Recording TR'+str(int(trial)),      (5, 50),
+                cv2.putText(frame,'Status : Recording TR'+str(int(trial)),      (5, 50),
                                 font,     .6,     fontColor,    2)                
                      
                 #show the frame to screen
-                cv2.imshow("Frame", frame)
+                cv2.imshow(frame_name, frame)
                 # Save Frame, img size should be equal to inp size
                 out.write(frame2)            
 
                 # Press Escape key to Quit
                 key = cv2.waitKey(1) & 0xFF
-
+                #print(frame_name,frame)
                 # Press p to pause recording
                 if key==ord('p'):
                     print(ord('p'))
                     while 1:
                         cv2.putText(frame, 'Status : Recording Paused',      (5, 50),
                                 font,     0.6,    fontColor,    2)
-                        #cv2.imshow("Frame", frame)
+                        #cv2.imshow(frame_name, frame)
                         key = cv2.waitKey(1)
                         if key==ord('p'):
                             start =  int(round(time.time()))
@@ -116,8 +115,11 @@ class Record(object):
                     continue
                 # Press escape to quit
                 if key == 27:
+                    cv2.destroyAllWindows() 
+                    #print(kinect.Release())
                    # self.exit_routine(name,time_stamp,frame_counter,ballx_pts,bally_pts,batx_pts,baty_pts,error,bounce)
-                    return
+                    return 1
+            
             else:
                 logging.error(
                     "Iniitalizing afer a break in Video. Restarting Start", start)
@@ -127,9 +129,12 @@ class Record(object):
                 key = cv2.waitKey(1)
                 # Press Escape key to Quit
                 if key == 27:
-                   return
+                    cv2.destroyAllWindows() 
+                    print(kinect.Release())             
+                    return 1
 
 if __name__=="__main__":
     obj=Record()
     obj.compute("demo","demo_age","demo_exp")
+    #help(PyKinectV2)
     
