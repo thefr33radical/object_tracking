@@ -9,6 +9,10 @@ import time
 import imutils
 import datetime
 import glob
+import sys
+
+save_path="H:/workdir/object_tracking/files/data/"
+path="H:/workdir/object_tracking/files/bounce videos"
 
 class ObjTrack(object):
     def __init__(self):
@@ -19,8 +23,7 @@ class ObjTrack(object):
         self.data["baty"]=[]
         self.data["timestamp"]=[]
         self.data["name"]=[]
-
-
+      
         self.lvl={}
         self.lvl["error"]=[]
         self.lvl["bounce#"]=[]
@@ -36,31 +39,6 @@ class ObjTrack(object):
         self.lvl2["experiment_condition"]=[]
         self.lvl2["timestamp"]=[]
         self.lvl2["name"]=[]
-
-        self.summary={}
-        self.summary["ID"]=[]
-        self.summary["condition"]=[]
-        self.summary["session"]=[]
-        self.summary["video"]=[]
-        self.summary["success"]=[]
-        self.summary["bounces"]=[]
-
-
-    def summarize(self,path):
-
-        for filename in glob.glob(os.path.join(path+'/*.mp4')):
-            temp=os.path.splitext(os.path.basename(filename))
-            temp=temp[0].split("_")
-            print(temp)
-            self.summary["ID"].append(temp[0])
-            self.summary["condition"].append(temp[1])
-            self.summary["session"].append(temp[2])
-            self.summary["video"].append(temp[3])
-            self.summary["success"].append(np.random.randint(3,10))
-            self.summary["bounces"].append(np.random.randint(9,18))
-
-        df4= pd.DataFrame.from_dict(self.summary)
-        df4.to_csv(path2+"summary.csv")
 
     def detect_line(self,frame):
         # Only red color will be high lighted
@@ -79,7 +57,6 @@ class ObjTrack(object):
             print(" line  points",lx,ly)
             return int(lx),int(ly),mask
         return None,None,None
-
 
     def detect_ball(self,frame):
 
@@ -117,6 +94,85 @@ class ObjTrack(object):
             return int(lx),int(ly),mask
         return None,None,None
 
+    def save_data(self,y,line_y,l,threshold=None):
+        df=pd.DataFrame.from_dict(self.data)
+        df2=pd.DataFrame.from_dict(self.lvl)
+        df3=pd.DataFrame.from_dict(self.lvl2)
+        threshold=7
+        #df.resample('name', how='mean', fill_method='pad')
+        try:
+
+            b_list=[]
+            e_list=[]
+            b=0
+            e=0
+            z=[0]*threshold
+            b_list+=z
+            e_list+=z
+
+            for i in range(threshold,len(df)-threshold):
+                low =df.loc[i-threshold:i-1,"bally"].values
+                high=df.loc[i+1:i+threshold,"bally"].values
+                
+                if all(df.loc[i,"bally"] > j for j in low) and all(df.loc[i,"bally"] > k for k in high):
+                    print(" ---- great Success ---- ")
+                    b=1
+                    e= df.loc[i-1,"bally"]-line_y
+                else:
+                    b=0
+                    e=0
+                b_list.append(b)
+                e_list.append(e)
+            
+            
+            if len(b_list)< len(df):
+                for j in range(len(b_list),len(df)):
+                    b_list.append(0)
+                    e_list.append(0)
+            print("-------------------",len(b_list),len(df))
+            df["bounce"]=b_list
+            df["error"]=e_list
+
+           
+            df3.to_csv(save_path+l[0]+"_"+l[1]+"_"+l[2]+"_"+l[3]+"_"+l[4]+"_op3.csv")
+            df2.to_csv(save_path+l[0]+"_"+l[1]+"_"+l[2]+"_"+l[3]+"_"+l[4]+"_op2.csv")    
+            df.to_csv(save_path+l[0]+"_"+l[1]+"_"+l[2]+"_"+l[3]+"_"+l[4]+"_op1.csv")
+            return
+        except:
+            b_list=[]
+            e_list=[]
+            b=0
+            e=0
+            z=[0]*threshold
+            b_list+=z
+            e_list+=z
+
+            for i in range(threshold,len(df)-threshold):
+                low =df.loc[i-threshold:i-1,"bally"].values
+                high=df.loc[i+1:i+threshold,"bally"].values
+                
+                if all(df.loc[i,"bally"] > j for j in low) and all(df.loc[i,"bally"] > k for k in high):
+                    print(" ---- great Success ---- ")
+                    b=1
+                    e= df.loc[i-1,"bally"]-line_y
+                else:
+                    b=0
+                    e=0
+                b_list.append(b)
+                e_list.append(e)
+            
+            if len(b_list)< len(df):
+                for j in range(len(b_list),len(df)):
+                    b_list.apend(0)
+                    e_list.append(0)
+                      
+            df["bounce"]=b_list
+            df["error"]=e_list
+
+            print("-------------------",len(b_list),len(df))
+            df3.to_csv(save_path+"default_op3.csv")
+            df2.to_csv(save_path+"default_op2.csv")
+            df.to_csv(save_path+"default_op1.csv")
 
     def compute(self,path):
         filename=os.path.splitext(os.path.basename(path))[0]
@@ -134,6 +190,8 @@ class ObjTrack(object):
         line_y=0
         line_mask=None
 
+        x=0
+        y=0
         bat_x=0
         bat_y=0
         bat_mask=None
@@ -144,31 +202,26 @@ class ObjTrack(object):
         success=0
 
         cap= cv2.VideoCapture(path)
-           
+        fcount=0   
         while(cap.isOpened()):
-
+            
             ret, frame = cap.read() 
             try:
                 color_img_resize = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
                 frame = color_img_resize
             except:
-                df=pd.DataFrame.from_dict(self.data)
-                df2=pd.DataFrame.from_dict(self.lvl)
-                df3=pd.DataFrame.from_dict(self.lvl2)
-                try:
-                    df3.to_csv("C:/Users/alienware/Downloads/"+l[0]+"_"+l[1]+"_"+l[2]+"_op3.csv")
-                    df2.to_csv("C:/Users/alienware/Downloads/"+l[0]+"_"+l[1]+"_"+l[2]+"_op2.csv")    
-                    df.to_csv("C:/Users/alienware/Downloads/"+l[0]+"_"+l[1]+"_"+l[2]+"_op1.csv")
-                    cap.release()
-                    cv2.destroyAllWindows()
-                except:
-                    df3.to_csv("C:/Users/alienware/Downloads/default_op3.csv")
-                    df2.to_csv("C:/Users/alienware/Downloads/default_op2.csv")
-                    df.to_csv("C:/Users/alienware/Downloads/default_op1.csv")
-                    cap.release()
-                    cv2.destroyAllWindows()
-
-                continue 
+                fcount+=1
+                
+                if fcount >2:
+                    print("-------BAD VIDEO------",fcount)
+                    self.save_data(y,line_y,l)
+                    return
+                    
+                continue
+                if cv2.waitKey(1) & 0xFF == ord('q'):   
+                    self.save_data(y,line_y,l)
+                    return                          
+                
             if line_set==0:
                 line_x,line_y,line_mask=self.detect_line(frame)
                 #print("]]]]]]]]]]]]]]]]] line y",line_x,line_y,line_mask)
@@ -201,14 +254,13 @@ class ObjTrack(object):
             b=np.array((bat_x,bat_y))
             dist = np.linalg.norm(a-b)
 
-           
             delay =1
             if dist < 120 and bat_y < y:
-                print("dist",dist)
+                #print("dist",dist)
                 bounce+=1
 
                 if y > line_y:
-                    print("success",y,line_y)
+                    #print("success",y,line_y)
                     success=1
                 else:
                     success=0
@@ -232,7 +284,6 @@ class ObjTrack(object):
                     self.lvl["experiment_condition"].append("error_expcondition")
                 self.lvl["timestamp"].append(time.time())
                 self.lvl["name"].append(l[0])
-
             
             self.data["ballx"].append(x)
             self.data["bally"].append(y)
@@ -240,7 +291,6 @@ class ObjTrack(object):
             self.data["baty"].append(bat_y)
             self.data["timestamp"].append(time.time())
             self.data["name"].append(l[0])
-
 
             cv2.putText(frame,"Ball POS "+str(x)+" "+str(y),    (10, 30), font,     fontScale,    fontColor,    lineType)
             cv2.putText(frame,"Bat POS "+str(bat_x)+" "+str(bat_y),    (10, 60), font,     fontScale,    fontColor,    lineType)
@@ -261,30 +311,20 @@ class ObjTrack(object):
                 time.sleep( 1.0/(frameLimit) - timeDiff )
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
-                df=pd.DataFrame.from_dict(self.data)
-                df2=pd.DataFrame.from_dict(self.lvl)
-                df3=pd.DataFrame.from_dict(self.lvl2)
-                #df.resample('name', how='mean', fill_method='pad')
-                try:
-                    df3.to_csv("C:/Users/alienware/Downloads/"+l[0]+"_"+l[1]+"_"+l[2]+"_op3.csv")
-                    df2.to_csv("C:/Users/alienware/Downloads/"+l[0]+"_"+l[1]+"_"+l[2]+"_op2.csv")    
-                    df.to_csv("C:/Users/alienware/Downloads/"+l[0]+"_"+l[1]+"_"+l[2]+"_op1.csv")
-                    cap.release()
-                    cv2.destroyAllWindows()
-                except:
-                    df3.to_csv("C:/Users/alienware/Downloads/default_op3.csv")
-                    df2.to_csv("C:/Users/alienware/Downloads/default_op2.csv")
-                    df.to_csv("C:/Users/alienware/Downloads/default_op1.csv")
-                    cap.release()
-                    cv2.destroyAllWindows()
-
+                self.save_data(y,line_y,l)
+                
                 cap.release()
                 cv2.destroyAllWindows()
-                break       
+                return
+
+        self.save_data(y,line_y,l)
+        cap.release()
+        cv2.destroyAllWindows()
+        return
 
 if __name__=="__main__":
-    path="H:/workdir/object_tracking/files/bounce videos/bounce_20_Restricted_Baseline_3.MP4"
-    path2="H:/workdir/object_tracking/files/bounce videos"
-    obj= ObjTrack()
-    #obj.summarize(path2)
-    obj.compute(path)
+    #path=sys.argv[0]
+    for f in glob.glob(os.path.join(path+'/*.mp4')):
+        obj= ObjTrack()    
+        print(os.path.basename(f))
+        obj.compute(path+"/"+os.path.basename(f))
