@@ -23,7 +23,7 @@ def summarize(path):
             c=0
 
             for i in df["error"].values:
-                if i>0:
+                if i < 15:
                     c+=1            
             try:
                 temp=t[0].split("_")
